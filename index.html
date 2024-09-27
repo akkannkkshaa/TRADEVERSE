@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="tv.css">
+    <title>Tradeverse</title>
+    <style>
+        /* Style for the image button */
+        #click-button {
+            cursor: pointer;
+            width: 150px;
+            height: 150px;
+            transition: transform 0.1s ease; /* Smooth transition for scaling */
+        }
+
+        /* Click effect: zoom in */
+        #click-button:active {
+            transform: scale(1.1); /* Zoom in by 10% when clicked */
+        }
+        /* Style for the connect wallet button */
+        #connect-wallet {
+            cursor: pointer;
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            margin-top: 20px;
+            transition: background-color 0.2s;
+        }
+
+        #connect-wallet:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <h1>TRADEVERSE</h1>
+        <div id="points">Points: 0</div>
+        <img id="click-button" src="tradeverse.jpg" alt="Click Me!">
+        <span id="floating-number" style="display: none; position: absolute; font-size: 20px; color: green;"></span>
+         <!-- Connect Wallet Button -->
+         <br><button id="connect-wallet">Connect Wallet</button>
+        
+         <!-- Display connected wallet address -->
+         <p id="wallet-address" style="display: none; margin-top: 10px;">Wallet Address: <span id="address"></span></p>
+         <script>
+            
+            document.getElementById('connect-wallet').addEventListener('click', async () => {
+                // Check if MetaMask is installed
+                if (typeof window.ethereum !== 'undefined') {
+                    try {
+                        // Request account access
+                        const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+                        const account = accounts[0];
+                        
+                        // Display the connected wallet address
+                        document.getElementById('address').innerText = account;
+                        document.getElementById('wallet-address').style.display = 'block';
+                        
+                        // Change button text
+                        document.getElementById('connect-wallet').innerText = 'Wallet Connected';
+                        document.getElementById('connect-wallet').disabled = true;
+                    } catch (error) {
+                        console.error('User denied wallet connection:', error);
+                        alert('User denied wallet connection');
+                    }
+                } else {
+                    alert('MetaMask is not installed. Please install MetaMask to connect.');
+                }
+            });
+        </script>
+         <div class="shop">
+            <h2>Shop</h2>
+            <button id="upgrade-button">Upgrade Click (+1) - 10 Points</button>
+            <button id="auto-clicker-button">Buy Auto Clicker - 50 Points</button>
+        </div>
+        <div id="status">
+            <p>Click Value: <span id="click-value">1</span></p>
+            <p>Auto Clickers: <span id="auto-clickers">0</span></p>
+        </div>
+    </div>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <script src="script.js"></script>
+    <script src="telegram.js"></script>
+</body>
+</html>
