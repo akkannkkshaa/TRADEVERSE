@@ -1,0 +1,57 @@
+/* styles.css */
+body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    background-color: #000000;
+    margin: 0;
+    font-family: Arial, sans-serif;
+}
+
+.game-container {
+    background: linear-gradient(to bottom, rgba(111, 255, 1, 0.7), #ffffffb3); /* Blue to white gradient */
+    padding: 20px;
+    box-shadow: 0px 0px 10px rgba(41, 91, 191, 0.2);
+    text-align: center;
+    border-radius: 10px;
+    
+}
+
+h1 {
+    margin-top: 0;
+}
+
+#click-button {
+    padding: 10px 20px;
+    margin: 10px;
+    cursor: pointer;
+
+    
+}
+/* Floating number styles */
+#floating-number {
+    display: none; /* Initially hidden */
+    position: absolute;
+    font-size: 20px;
+    color: green;
+    transition: transform 0.5s ease, opacity 0.5s ease; /* Smooth transition */
+    z-index: 10; /* Ensure it's above other elements */
+}
+
+
+
+.shop {
+    margin-top: 20px;
+}
+
+.shop button {
+    padding: 10px;
+    margin: 5px;
+    cursor: pointer;
+}
+
+#status {
+    margin-top: 20px;
+    font-size: 16px;
+}
