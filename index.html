@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="tv.css">
+    <title>Tradeverse</title>
+    <style>
+        /* Style for the image button */
+        #click-button {
+            cursor: pointer;
+            width: 250px;
+            height: 250px;
+            transition: transform 0.01s ease; /* Smooth transition for scaling */
+        }
+
+        /* Click effect: zoom in */
+        #click-button:active {
+            transform: scale(1.1); /* Zoom in by 10% when clicked */
+        }
+         /* Floating number style */
+        #floating-number {
+            display: none;
+            position: absolute;
+            font-size: 20px;
+            color: rgb(255, 255, 255);
+            transition: transform 0.5s ease, opacity 0.5s ease;
+            z-index: 9999;
+        }
+
+        /* Modal styles */
+        .modal {
+            display: none; /* Hidden by default */
+            position: fixed; /* Stay in place */
+            z-index: 1000; /* Sit on top */
+            left: 0;
+            top: 0;
+            width: 100%; /* Full width */
+            height: 100%; /* Full height */
+            overflow: auto; /* Enable scroll if needed */
+            background-color: rgba(0, 0, 0, 0.7); /* Black w/ opacity */
+        }
+
+        .modal-content {
+            background-color: #ff7614; /* White background */
+            margin: 15% auto; /* 15% from the top and centered */
+            padding: 20px; /* Some padding */
+            border: 1px solid #888; /* Border */
+            width: 80%; /* Could be more or less, depending on screen size */
+        }
+
+        .close-button {
+            color: #000000; /* Grey */
+            float: right; /* Float to the right */
+            font-size: 28px; /* Large font size */
+            font-weight: bold; /* Bold */
+        }
+
+        .close-button:hover,
+        .close-button:focus {
+            color: black; /* Black on hover */
+            text-decoration: none; /* No underline */
+            cursor: pointer; /* Pointer cursor */
+        }
+
+        /* friend Modal styling */
+.modal2 {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0, 0, 0, 0.8);
+}
+
+.modal2-content {
+    background-color: #fff;
+    margin: 0;
+    padding: 20px;
+    border: 1px solid #888;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    border-radius: 0px;
+}
+
+.close-button {
+    color: #aaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+}
+
+.close-button:hover,
+.close-button:focus {
+    color: black;
+    text-decoration: none;
+    cursor: pointer;
+}
+#friends-button {
+    position: fixed; /* You can change this to relative/absolute based on your design */
+    bottom: 10px; /* Adjust this value to place it where you want */
+    right: 10px; /* Adjust this value as needed */
+    padding: 10px 20px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    z-index: 1000; /* Ensure it's above other elements */
+}
+
+
+    </style>
+
+
+</head>
+<body>
+    <div class="game-container">
+        <font color="black"><font face="Courier New"><h1>TRADEVERSE</h1></font></font>
+        <div id="points">Coins: 0</div>
+        <img id="click-button" src="tap logo.png" alt="Click Me!">
+        <span id="floating-number"></span>
+        <button id="connect-wallet-button">Wallet</button>
+
+        
+        <br><!-- Boost Button to open Boost modal -->
+        <button id="boost-button">🚀Boost</button>
+        
+       <!-- Boost Modal -->
+<div id="boost-modal" class="modal">
+    <div class="modal-content">
+        <span class="close-button">&times;</span>
+        <h2>Boost Options</h2>
+        <p>Upgrade Click Cost: <span id="upgrade-cost-boost">${upgradeCost}</span> points</p>
+        <p>Auto Clicker Cost: <span id="auto-clicker-cost-boost">${autoClickerCost}</span> points</p>
+        <button id="upgrade-button">Upgrade Click (+1)</button>
+        <button id="auto-clicker-button">Buy Auto Clicker</button>
+        <button id="activate-auto-clicker">Activate Auto Clicker</button>
+        <p>Auto Clicker Activations: <span id="activations-count">0</span> / 3</p>
+        <p>Click Value: <span id="click-value">1</span></p>
+        <p>Auto Clickers: <span id="auto-clickers">0</span></p>
+    </div>
+</div>
+<!-- Friends Modal -->
+<div id="friends-modal" class="modal2">
+    <div class="modal2-content">
+        <span class="close-button">&times;</span>
+        <h2>Friends</h2>
+        <ul id="friends-list"></ul>
+        <button id="invite-friends">Invite Friends</button>
+    </div>
+</div>
+ <!-- Separate button to open the modal -->
+ <button id="friends-button">Friends</button>
+</div>
+
+
+        </div>
+
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+
+    <script>
+         document.addEventListener('DOMContentLoaded', () => {
+        let points = 0;
+        let clickValue = 1; // The value added per click
+        let autoClickers = 0; // Number of auto clickers purchased
+        let autoClickerCost = 50; // Initial cost of an auto clicker
+        let autoClickerClicks = 0;
+        let maxAutoClicks = 500; // Initial click limit
+        let autoClickerActivations = parseInt(localStorage.getItem('autoClickerActivations')) || 0; // Load from localStorage
+        const maxDailyActivations = 3;
+        let upgradeCost = 10; // Cost for upgrading click value
+        let isAutoClickerActive = false; // Variable to track if auto clicker is active
+        loadFriends();
+        // Get the current date in 'YYYY-MM-DD' format
+        const currentDate = new Date().toISOString().split('T')[0];
+
+        // Get the last stored date from localStorage
+        const storedDate = localStorage.getItem('lastActivationDate');
+        
+        // Check if the stored date is not today's date
+        if (storedDate !== currentDate) 
+        {
+            localStorage.setItem('lastActivationDate', currentDate); // Update to today's date
+            localStorage.setItem('autoClickerActivations', 0); // Reset activations count for the new day
+            autoClickerActivations = 0; // Reset the local variable as well
+        }
+
+            
+            // Load the saved progress from localStorage
+            function loadProgress() {
+                points = parseInt(localStorage.getItem('points')) || 0;
+                clickValue = parseInt(localStorage.getItem('clickValue')) || 1;
+                autoClickers = parseInt(localStorage.getItem('autoClickers')) || 0;
+                autoClickerActivations = parseInt(localStorage.getItem('autoClickerActivations')) || 0;
+                maxAutoClicks = parseInt(localStorage.getItem('maxAutoClicks')) || 500;
+                upgradeCost = parseInt(localStorage.getItem('upgradeCost')) || 10; // Load upgrade cost
+                autoClickerCost = parseInt(localStorage.getItem('autoClickerCost')) || 50; // Load auto clicker cost
+                updatePointsDisplay();
+                updateStatusDisplay();
+                updateDailyActivationsDisplay();
+                updateBoostCosts(); // Update costs in the Boost modal on load
+            }
+            
+
+            // Function to update the display of daily activations
+    const updateDailyActivationsDisplay = () => {
+        document.getElementById('activations-count').innerText = autoClickerActivations;
+    };
+            // Update points display
+            function updatePointsDisplay() {
+                document.getElementById('points').innerText = `Coins: ${points}`;
+            }
+
+            // Update status display for click value and auto clickers
+            function updateStatusDisplay() {
+                document.getElementById('click-value').innerText = clickValue;
+                document.getElementById('auto-clickers').innerText = autoClickers;
+            }
+
+            // Save progress to localStorage
+            function saveProgress() {
+                localStorage.setItem('points', points);
+                localStorage.setItem('clickValue', clickValue);
+                localStorage.setItem('autoClickers', autoClickers);
+                localStorage.setItem('maxAutoClicks', maxAutoClicks);
+                localStorage.setItem('autoClickerActivations', autoClickerActivations);
+                localStorage.setItem('upgradeCost', upgradeCost); // Save upgrade cost
+                localStorage.setItem('autoClickerCost', autoClickerCost); // Save auto clicker cost
+            }
+
+            // Handle clicking the main button
+            document.getElementById('click-button').addEventListener('click', (event) => {
+                points += clickValue; // Add points based on click value
+                updatePointsDisplay();
+
+                // Use pageX and pageY to position the floating number
+    const clickX = event.pageX; // Get the absolute X position
+    const clickY = event.pageY; // Get the absolute Y position
+                
+                // Display floating number effect
+                displayFloatingNumber(clickValue, clickX, clickY); 
+                
+                saveProgress(); // Save progress after each click
+            });
+
+            // Function to display floating number effect
+            const displayFloatingNumber = (value, x, y) => {
+                const floatingNumber = document.getElementById('floating-number');
+                floatingNumber.innerText = `+${value}`;
+                floatingNumber.style.display = 'block';
+                floatingNumber.style.opacity = '1';
+                
+                // Set position of the floating number based on click coordinates
+                floatingNumber.style.left = `${x}px`; 
+                floatingNumber.style.top = `${y}px`; 
+                floatingNumber.style.transform = 'translateY(-20px)'; // Move up slightly
+
+                // Animate the floating number
+                setTimeout(() => {
+                    floatingNumber.style.transform = 'translateY(0)';
+                    floatingNumber.style.opacity = '0';
+                }, 1000);
+            };
+
+            // Handle Boost button click
+              document.getElementById('boost-button').addEventListener('click', () => {
+              updateBoostCosts(); // Ensure costs are updated before opening the modal
+              document.getElementById('boost-modal').style.display = 'block'; // Show the Boost modal
+            });
+
+// Function to update costs in the Boost modal
+function updateBoostCosts() {
+    document.getElementById('upgrade-cost-boost').innerText = `${upgradeCost} points`;
+    document.getElementById('auto-clicker-cost-boost').innerText = `${autoClickerCost} points`;
+}
+
+// Close the Boost modal
+document.querySelectorAll('.close-button').forEach(button => {
+    button.addEventListener('click', () => {
+        document.getElementById('boost-modal').style.display = 'none';
+    });
+});
+
+
+
+            // Upgrade click function
+            document.getElementById('upgrade-button').addEventListener('click', () => {
+                if (points >= upgradeCost) {
+                    points -= upgradeCost; // Deduct points for upgrade
+                    clickValue++; // Increase click value
+                    upgradeCost *= 2; // Double the cost for next upgrade
+                    updatePointsDisplay(); // Update points display
+                    updateStatusDisplay(); // Update status display
+                    updateBoostCosts(); // Update boost costs in the modal
+                    saveProgress(); // Save progress
+                } else {
+                    alert('Not enough coins to upgrade.');
+                }
+            });
+
+            // Buy Auto Clicker function
+            document.getElementById('auto-clicker-button').addEventListener('click', () => {
+                if (points >= autoClickerCost) {
+                    points -= autoClickerCost; // Deduct points for auto clicker
+                    autoClickers++; // Increment auto clickers count
+                    autoClickerCost *= 2; // Double the cost for the next auto clicker
+                    updatePointsDisplay(); // Update points display
+                    updateStatusDisplay(); // Update status display
+                    updateBoostCosts(); // Update boost costs in the modal
+                    saveProgress(); // Save progress
+                } else {
+                    alert('Not enough coins to buy an auto clicker.');
+                }
+            });
+
+            // Activate Auto Clicker function
+            document.getElementById('activate-auto-clicker').addEventListener('click', () => {
+                if (autoClickerActivations < maxDailyActivations) {
+                    isAutoClickerActive = true; // Activate auto clicker
+                    autoClickerActivations++; // Increment activations
+                    localStorage.setItem('autoClickerActivations', autoClickerActivations); // Save to localStorage
+                    updateDailyActivationsDisplay(); // Update activations display
+                    updatePointsDisplay(); // Update points display
+                    saveProgress(); // Save progress
+                    setTimeout(() => {
+                        isAutoClickerActive = false; // Deactivate auto clicker after 10 seconds
+                        alert('Auto clicker has been deactivated.');
+                    }, 10000); // Change to desired duration
+                } else {
+                    alert('You have reached the maximum activations for today.');
+                }
+            });
+
+            // Load progress on page load
+            loadProgress();
+
+            // Set an interval for auto clicking if active
+            setInterval(() => {
+                if (isAutoClickerActive) {
+                    autoClickerClicks += clickValue;
+                    points += autoClickerClicks;
+                    updatePointsDisplay(); // Update points display
+                }
+            }, 1000); // Change the interval as needed
+        });
+
+        // Show the Friends modal in full screen
+document.getElementById('friends-button').addEventListener('click', () => {
+    document.getElementById('friends-modal').style.display = 'block';
+    loadFriends(); // Load the list of friends when opening the modal
+});
+
+// Close the Friends modal
+document.querySelector('#friends-modal .close-button').addEventListener('click', () => {
+                document.getElementById('friends-modal').style.display = 'none';
+            });
+
+// Function to load friends
+function loadFriends() {
+    const friendsList = document.getElementById('friends-list');
+    friendsList.innerHTML = ''; // Clear the list first
+
+    const friends = JSON.parse(localStorage.getItem('addedFriends')) || [];
+    friends.forEach(friend => {
+        const li = document.createElement('li');
+        li.innerText = friend;
+        friendsList.appendChild(li);
+    });
+}
+
+// Invite friends through Telegram
+document.getElementById('friends-button').addEventListener('click', () => {
+    const telegramUsername = prompt("Enter the friend's Telegram username:");
+    if (telegramUsername) {
+        // Here you can use the Telegram Web App API to send an invite
+        alert(`Invitation sent to ${telegramUsername}`);
+        // Add friend to local storage
+        const friends = JSON.parse(localStorage.getItem('addedFriends')) || [];
+        friends.push(telegramUsername);
+        localStorage.setItem('addedFriends', JSON.stringify(friends));
+        loadFriends(); // Refresh the list
+    }
+});
+  </script>
+</body>
+</html>
