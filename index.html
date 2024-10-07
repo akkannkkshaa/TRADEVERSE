@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="tv.css">
+    <title>Tradeverse</title>
+    <style>
+        /* Style for the image button */
+        #click-button {
+            cursor: pointer;
+            width: 200px;
+            height: 200px;
+            transition: transform 0.1s ease; /* Smooth transition for scaling */
+        }
+
+        /* Click effect: zoom in */
+        #click-button:active {
+            transform: scale(1.1); /* Zoom in by 10% when clicked */
+        }
+
+        /* Floating number style */
+        #floating-number {
+            display: none;
+            position: absolute;
+            font-size: 20px;
+            color: rgb(255, 255, 255);
+            transition: transform 0.5s ease, opacity 0.5s ease;
+            z-index: 9999;
+        }
+
+        /* Modal styles */
+        .modal {
+            display: none; /* Hidden by default */
+            position: fixed; /* Stay in place */
+            z-index: 1000; /* Sit on top */
+            left: 0;
+            top: 0;
+            width: 100%; /* Full width */
+            height: 100%; /* Full height */
+            overflow: auto; /* Enable scroll if needed */
+            background-color: rgba(0, 0, 0, 0.7); /* Black w/ opacity */
+        }
+
+        .modal-content {
+            background-color: #ff7614; /* White background */
+            margin: 15% auto; /* 15% from the top and centered */
+            padding: 20px; /* Some padding */
+            border: 1px solid #888; /* Border */
+            width: 80%; /* Could be more or less, depending on screen size */
+        }
+
+        .close-button {
+            color: #000000; /* Grey */
+            float: right; /* Float to the right */
+            font-size: 28px; /* Large font size */
+            font-weight: bold; /* Bold */
+        }
+
+        .close-button:hover,
+        .close-button:focus {
+            color: black; /* Black on hover */
+            text-decoration: none; /* No underline */
+            cursor: pointer; /* Pointer cursor */
+        }
+
+        #progress-container {
+    width: 50%;
+    background-color: #e0e0e0; /* Light grey background for the progress container */
+    border-radius: 5px; /* Rounded corners */
+    overflow: hidden; /* Hide overflow to keep it neat */
+    margin-top: 20px; /* Space above the progress bar */
+}
+
+#progress-bar {
+    height: 20px; /* Height of the progress bar */
+    background-color: #76c7c0; /* Color of the progress bar */
+    width: 0%; /* Start width is 0% */
+    transition: width 0.5s; /* Smooth transition */
+}
+#progress-bar-text {
+    color: #000; /* Text color (black for better visibility) */
+    font-weight: bold; /* Bold text */
+    position: absolute;
+    right: 10px; /* Align text to the right */
+    top:50%;
+    transform: translateY(-50%); /* Center vertically */
+    z-index: 1; /* Ensure text is on top */
+}
+/* Menu container styling */
+#menu-container {
+    bottom: 0; /* Pin it to the bottom */
+    left: 0;
+    display: flex;
+    justify-content: space-around;
+    margin-top: 20px;
+    background-color: #ff7614;
+    padding: 10px;
+    border-radius: 10px;
+    box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1); /* Optional shadow for style */
+}
+
+#menu-container button {
+    font-size: 18px;
+    padding: 10px 20px;
+    background-color: #f0f0f0;
+    border: 1px solid #888;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+#menu-container button:hover {
+    background-color: #ff7614;
+    color: #ffffff;
+}
+
+#menu-container button:active {
+    transform: scale(0.95); /* Slight zoom-in effect when clicked */
+}
+    </style>
+</head>
+<body>
+   <div class="game-container"  id="game-container">
+       <font face="Courier New"><h1>TRADEVERSE</h1></font></font>
+       <!-- Menu Container -->
+    <div class="menu-container">
+        <button id="mine-button">⛏️ Mine</button>
+        <button id="earn-button">💰 Earn</button>
+        <button id="friends-button">👥 Friends</button>
+        <button id="wallet-button">👛 Wallet</button>
+    </div>
+      <!-- Friends Page -->
+   <div id="friends-page" style="display:none;">
+    <h2>Friends</h2>
+    <p>You have <span id="friend-count">0</span> friends.</p>
+    <button id="invite-friends-button">Invite Friends</button>
+    <p id="invite-success" style="display:none;color:green;">Link copied to clipboard!</p>
+</div>
+       <!-- Progress Bar -->
+       <div id="progress-container" style="position: relative; width: 50%; height: 20px;">
+            <div id="progress-bar"></div>
+            <div id="progress-bar-text"></div>
+       </div>
+        <div id="progress-display" style="text-align: center; margin-top: 15px;"></div>
+        <p id="level">Level: 1</p>
+        <div id="points">🥮Coins: 0</div>
+        <img id="click-button" src="tap logo.png" alt="Click Me!">
+        <span id="floating-number"></span>
+        
+        <br><!-- Boost Button to open Boost modal -->
+        <button id="boost-button">🚀Boost</button>
+        
+        
+        <!-- Boost Modal -->
+<div id="boost-modal" class="modal">
+    <div class="modal-content">
+        <span class="close-button">&times;</span>
+        <h2>Boost Options</h2>
+        <p>Upgrade Click Cost: <span id="upgrade-cost-boost">${upgradeCost}</span> points</p>
+        <p>Auto Clicker Cost: <span id="auto-clicker-cost-boost">${autoClickerCost}</span> points</p>
+        <button id="upgrade-button">Upgrade Click (+1)</button>
+        <button id="auto-clicker-button">Buy Auto Clicker</button>
+        <button id="activate-auto-clicker">Activate Auto Clicker</button>
+        <p>Auto Clicker Activations: <span id="activations-count">0</span> / 3</p>
+        <p>Click Value: <span id="click-value">1</span></p>
+
+    </div>
+</div>
+</div>
+
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        let points = localStorage.getItem('points') ? parseInt(localStorage.getItem('points')) : 0;
+        let clickValue = parseInt(localStorage.getItem('clickValue')) || 1; // The value added per click
+        let autoClickers = parseInt(localStorage.getItem('autoClickers')) || 0;
+        let autoClickerCost = parseInt(localStorage.getItem('autoClickerCost')) || 50;
+        let maxAutoClicks = parseInt(localStorage.getItem('maxAutoClicks')) || 500;
+        let autoClickerActivations = parseInt(localStorage.getItem('autoClickerActivations')) || 0;
+        let totalClicks = parseInt(localStorage.getItem('totalClicks')) || 0;
+        let currentLevel = parseInt(localStorage.getItem('currentLevel')) || 1;
+        let pointsRequired = parseInt(localStorage.getItem('pointsRequired')) || 5000;
+        let upgradeCost = parseInt(localStorage.getItem('upgradeCost')) || 10;
+        const maxDailyActivations = 3;
+        let isAutoClickerActive = false;
+        let progressPoints = points; // This will track points that affect the progress bar
+
+
+        // Get current date and reset activations if needed
+        const currentDate = new Date().toISOString().split('T')[0];
+        const storedDate = localStorage.getItem('lastActivationDate');
+        if (storedDate !== currentDate) {
+            localStorage.setItem('lastActivationDate', currentDate);
+            localStorage.setItem('autoClickerActivations', 0);
+            autoClickerActivations = 0;
+        }
+
+        // Load progress on page load
+        function loadProgress() {
+            updatePointsDisplay();
+            updateStatusDisplay();
+            updateDailyActivationsDisplay();
+            updateBoostCosts();
+            updateProgressBar();
+            document.getElementById('level').innerText = `⭐Level:${currentLevel}`;
+         // Disable the "Buy Auto Clicker" button if already purchased
+         if (autoClickers > 0) {
+            disableAutoClickerButton();
+        }
+        }
+
+        // Update points display and progress bar
+        function updatePointsDisplay() {
+            document.getElementById('points').innerText = `🥮Coins: ${points}`;
+            updateProgressBar();
+        }
+
+        function updateStatusDisplay() {
+            document.getElementById('click-value').innerText = clickValue;
+            document.getElementById('auto-clickers').innerText = autoClickers;
+        }
+
+        const updateDailyActivationsDisplay = () => {
+            document.getElementById('activations-count').innerText = autoClickerActivations;
+        };
+
+        // Update the Boost modal costs
+        function updateBoostCosts() {
+            document.getElementById('upgrade-cost-boost').innerText = `${upgradeCost} points`;
+            document.getElementById('auto-clicker-cost-boost').innerText = `${autoClickerCost} points`;
+        }
+
+        // Handle Boost modal display
+        document.getElementById('boost-button').addEventListener('click', () => {
+            updateBoostCosts();
+            document.getElementById('boost-modal').style.display = 'block';
+        });
+
+        document.querySelectorAll('.close-button').forEach(button => {
+            button.addEventListener('click', () => {
+                document.getElementById('boost-modal').style.display = 'none';
+            });
+        });
+
+        document.getElementById('mine-button').addEventListener('click', () => {
+    alert('Mining started!');
+});
+
+document.getElementById('earn-button').addEventListener('click', () => {
+    alert('Time to earn more coins!');
+});
+
+document.getElementById('friends-button').addEventListener('click', () => {
+    // You can open the friends list or trigger a modal here
+    alert('Showing friends list');
+});
+
+document.getElementById('wallet-button').addEventListener('click', () => {
+    alert('Opening wallet...');
+});
+
+
+        // Function to handle click button
+        document.getElementById('click-button').addEventListener('click', (event) => {
+            points += clickValue; // This is the total points
+            progressPoints += clickValue; // Increment progress points separately
+            totalClicks++;
+            updatePointsDisplay();
+            saveProgress();
+
+            const clickX = event.pageX;
+            const clickY = event.pageY;
+            displayFloatingNumber(clickValue, clickX, clickY);
+        });
+
+        function displayFloatingNumber(value, x, y) {
+            const floatingNumber = document.getElementById('floating-number');
+            floatingNumber.innerText = `+${value}`;
+            floatingNumber.style.display = 'block';
+            floatingNumber.style.left = `${x}px`;
+            floatingNumber.style.top = `${y}px`;
+            floatingNumber.style.transform = 'translateY(-20px)';
+
+            setTimeout(() => {
+                floatingNumber.style.opacity = '0';
+            }, 1000);
+        }
+
+        // Upgrade click value
+        document.getElementById('upgrade-button').addEventListener('click', () => {
+            if (points >= upgradeCost) {
+                points -= upgradeCost;
+                clickValue++;
+                upgradeCost *= 2;
+                updatePointsDisplay();
+                updateStatusDisplay();
+                updateBoostCosts();
+                saveProgress();
+            } else {
+                alert('Not enough coins to upgrade.');
+            }
+        });
+
+        
+        // Buy Auto Clicker (only once)
+    document.getElementById('auto-clicker-button').addEventListener('click', () => {
+        if (points >= autoClickerCost && autoClickers === 0) {
+            points -= autoClickerCost;
+            autoClickers = 1; // Limit auto clicker purchase to one
+            updatePointsDisplay();
+            updateStatusDisplay();
+            disableAutoClickerButton(); // Disable button after purchase
+            saveProgress();
+        } else if (autoClickers > 0) {
+            alert('Auto Clicker can only be purchased once.');
+        } else {
+            alert('Not enough coins to buy an auto clicker.');
+        }
+        function disableAutoClickerButton() {
+          const autoClickerButton = document.getElementById('auto-clicker-button');
+          autoClickerButton.disabled = true;
+          autoClickerButton.innerText = 'Auto Clicker Purchased';
+}
+
+    });
+
+        // Activate Auto Clicker
+        document.getElementById('activate-auto-clicker').addEventListener('click', () => {
+            if (autoClickerActivations < maxDailyActivations) {
+                isAutoClickerActive = true;
+                autoClickerActivations++;
+                updateDailyActivationsDisplay();
+                saveProgress();
+
+                // Start collecting points every second (1000 ms)
+        const autoClickInterval = setInterval(() => {
+            const pointsToAdd = clickValue * autoClickers;
+            points += pointsToAdd;         // Add points to total coins
+            progressPoints += pointsToAdd; // Add points to the progress bar
+            updatePointsDisplay(); // Update points in the UI
+            updateProgressBar();  // Ensure the progress bar updates with auto-clicker
+            saveProgress(); // Save progress to local storage
+        }, 1000); // Collect points every second
+
+                setTimeout(() => {
+                    clearInterval(autoClickInterval); // Stop collecting points after 2 hours
+                    isAutoClickerActive = false;
+                    alert('Auto clicker has been deactivated.');
+                }, 7200000); // 2 hours (in ms)
+            } else {
+                alert('You have reached the maximum activations for today.');
+            }
+        });
+
+        // Save progress to localStorage
+        function saveProgress() {
+            localStorage.setItem('points', points);
+            localStorage.setItem('clickValue', clickValue);
+            localStorage.setItem('autoClickers', autoClickers);
+            localStorage.setItem('autoClickerCost', autoClickerCost);
+            localStorage.setItem('totalClicks', totalClicks);
+            localStorage.setItem('currentLevel', currentLevel);
+            localStorage.setItem('upgradeCost', upgradeCost);
+            localStorage.setItem('pointsRequired', pointsRequired);
+            localStorage.setItem('autoClickerActivations', autoClickerActivations);
+        }
+
+        // Progress bar update
+        function updateProgressBar() {
+            const progressBar = document.getElementById('progress-bar');
+            const progressText = document.getElementById('progress-bar-text');
+            const percentage = (progressPoints / pointsRequired) * 100;
+            progressBar.style.width = percentage + '%';
+            progressText.innerText = `${progressPoints} / ${pointsRequired}`;
+            checkLevelUp();
+        }
+
+        // Check if level up is possible
+        function checkLevelUp() {
+            if (progressPoints >= pointsRequired) {
+                progressPoints = 0;
+                currentLevel++;
+                pointsRequired += 5000;
+                document.getElementById('level').innerText = `Level: ${currentLevel}`;
+                updateProgressBar();
+            }
+        }
+
+        loadProgress();
+    });
+</script>
+</body>
+</html>
